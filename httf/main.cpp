@@ -161,7 +161,7 @@ ll SUCCESS_CNT = 0;
 
 ll TURN = 0;
 bool in_check(l_l P){
-    if(abs(P.fi)>R || abs(P.fi)>R)return false;
+    if(abs(P.fi)>R || abs(P.se)>R)return false;
     return P.fi*P.fi + P.se*P.se <= R * R;
 }
 dd output(l_l P){
@@ -174,8 +174,11 @@ dd output(l_l P){
     ll x=P.fi;
     ll y=P.se;
     
-    assert(abs(x)<=R);
-    assert(abs(y)<=R);
+    if(!in_check(P)){
+        cerr<<"ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+        cerr<<"ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+        cerr<<"ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+    }
     assert(in_check(P));
     cout<<x<<" "<<y<<endl;
     fflush(stdout);
@@ -271,15 +274,21 @@ signed main(){fastio
     };
     
     ll cnt = 0;
-    rep(i,1,2000){
+    rep(i,1,100000){
         //DEB(i);
         l_l p1 = random();
-        l_l p2 = p1;
-        if(p1.se>=0){
-            p2.se -= 1e6;
-        }else{
-            p2.se += 1e6;
+        l_l p2 = {inf,0};
+        for(ll dx=-4e7;dx<=1e7;dx+=1e6){
+            for(ll dy=-4e7;dy<=1e7;dy+=1e6){
+                if(p2.fi!=inf)continue;
+                if(p1==p2)continue;
+                p2 = {p1.fi+dx,p1.se+dy};
+                if(!in_check(p2))p2={inf,0};
+            }
         }
+        
+        
+        
         
         dd theta1 = output(p1);
         if(nil(theta1))continue;
