@@ -1,4 +1,3 @@
-
 #pragma GCC target("avx2")
 #pragma GCC optimize("O3")
 #pragma GCC optimize("unroll-loops")
@@ -202,12 +201,13 @@ bool nil(dd x){
 
 struct line{
     dd a,b,c;
+    dd theta;//ラジアン表記[0,2PI)
 };
 line makeline(l_l p,dd theta){
     //みすってるかも
     dd ta = tan(theta);
-  //  DEB(ta);
-    return {ta,-1,p.se-ta*p.fi};
+    DEB(ta);
+    return {ta,-1,p.se-ta*p.fi,theta};
 }
 l_l kouten(line l1,line l2){
     dd a1 = l1.a;
@@ -244,6 +244,43 @@ l_l kouten(line l1,line l2){
     return {x,y};
 }
 
+struct half{
+    l_l p;
+    dd theta;//ラジアン表記
+};
+l_l add(l_l a,l_l b){
+    return {a.fi+b.fi,a.se+b.se};
+}
+l_l move(half p,ll dis){
+    assert(dis>=0);
+    ll ok = 0;
+    ll ng = dis + 1;
+    auto C=[](half p,ll mid){
+        ll dx = round(cos(p.theta) * mid);
+        ll dy = round(sin(p.theta) * mid);
+       // cerr<<(dx*dx+dy*dy-mid)<<" "<<dx<<" "<<dy<<" "<<mid<<" "<<p.theta<<endl;
+        l_l nx = add(p.p,{dx,dy});
+        return nx;
+    };
+    while(abs(ok-ng)>1){
+        ll mid = (ok+ng)/2;
+        l_l nx = C(p,mid);
+        if(in_check(nx))ok=mid;
+        else ng=mid;
+    }
+    l_l nx = C(p,ok);
+    assert(in_check(nx));
+    return nx;
+}
+
+dd rad_dis(dd a,dd b){
+    if(a>b)swap(a,b);
+    dd ret = b-a;
+    chmin(ret,a+2*PI-b);
+    assert(-EPS<=ret && ret<=PI+ret);
+    return ret;
+}
+
 signed main(){fastio
     clock_gettime(CLOCK_REALTIME, &START_TIME);
     ///////////////////////////////////////
@@ -254,7 +291,13 @@ signed main(){fastio
         line l = makeline(p,t);
         cout<<l.a<<" "<<l.b<<" "<<l.c<<endl;
     }exit(0);
-    */
+    //*/
+    /*
+    rep(i,1,10){
+        dd a, b;cin>>a>>b;
+        cout<<rad_dis(a,b)<<endl;
+    }
+     //*/
     //実験
     ////////////////////////////////////////////////////////////
     
@@ -274,36 +317,38 @@ signed main(){fastio
     };
     
     ll cnt = 0;
-    rep(i,1,100000){
-        //DEB(i);
+    rep(i,1,10000){
+        
         l_l p1 = random();
-        l_l p2 = {inf,0};
-        for(ll dx=-4e7;dx<=1e7;dx+=1e6){
-            for(ll dy=-4e7;dy<=1e7;dy+=1e6){
-                if(p2.fi!=inf)continue;
-                if(p1==p2)continue;
-                p2 = {p1.fi+dx,p1.se+dy};
-                if(!in_check(p2))p2={inf,0};
+        
+        half H;
+        {
+            dd theta = output(p1);
+            if(nil(theta))continue;
+            H = {p1,theta};
+        }
+        
+        ll nxdis = 5e7;
+        
+        rep(loop,1,20){
+            //20回で見つからなければbreak
+            l_l nx = move(H,nxdis);
+            dd theta = output(nx);
+            if(nil(theta))break;
+            
+            dd raddis = rad_dis(theta,H.theta);
+            
+            if(abs(raddis)<=(dd)RHO*2e-3){
+                H = {nx,theta};
+            }else if(abs(raddis-PI)<=(dd)RHO*2e-3){
+                H = {nx,theta};
+                nxdis *= 0.5;
+            }else{
+                H = {nx,theta};
+                //もったいない
             }
         }
         
-        
-        
-        
-        dd theta1 = output(p1);
-        if(nil(theta1))continue;
-        
-        dd theta2 = output(p2);
-        if(nil(theta2))continue;
-        
-        line l1 = makeline(p1,theta1);
-        line l2 = makeline(p2,theta2);
-        
-        l_l kou = kouten(l1,l2);
-        if(in_check(kou)){
-            output(kou);
-            cnt++;
-        }
     }
     
     
