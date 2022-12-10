@@ -156,18 +156,27 @@ dd stop_watch() {
 
 ll RHO;
 ll R = (ll)1e9;
-dd NIL = -1;
+dd NIL = -10;
+ll SUCCESS_CNT = 0;
 
 ll TURN = 0;
-bool in_check(ll x,ll y){
-    return x * x + y * y <= R * R;
+bool in_check(l_l P){
+    if(abs(P.fi)>R || abs(P.fi)>R)return false;
+    return P.fi*P.fi + P.se*P.se <= R * R;
 }
-dd output(ll x,ll y){
+dd output(l_l P){
     TURN++;
-    if(TURN == 1001)exit(0);
+    if(TURN == 1001){
+        //cerr<<RHO<<endl;
+        DEB(SUCCESS_CNT);
+        exit(0);
+    }
+    ll x=P.fi;
+    ll y=P.se;
     
     assert(abs(x)<=R);
     assert(abs(y)<=R);
+    assert(in_check(P));
     cout<<x<<" "<<y<<endl;
     fflush(stdout);
     ll r;cin>>r;
@@ -175,33 +184,117 @@ dd output(ll x,ll y){
         dd theta;cin>>theta;
         return theta;
     }else{
+        SUCCESS_CNT++;
         ll X,Y;cin>>X>>Y;
         if(r==2){
+            DEB(SUCCESS_CNT);
             exit(0);
         }
     }
     return NIL;
 }
+bool nil(dd x){
+    return abs(x-NIL)<=1;
+}
 
-
+struct line{
+    dd a,b,c;
+};
+line makeline(l_l p,dd theta){
+    //みすってるかも
+    dd ta = tan(theta);
+  //  DEB(ta);
+    return {ta,-1,p.se-ta*p.fi};
+}
+l_l kouten(line l1,line l2){
+    dd a1 = l1.a;
+    dd b1 = l1.b;
+    dd c1 = l1.c;
+    
+    dd a2 = l2.a;
+    dd b2 = l2.b;
+    dd c2 = l2.c;
+    
+    auto out=[](){
+        cerr<<"OUT"<<endl;
+        return (l_l){0,0};
+    };
+    ll x,y;
+    {
+        dd A =(b1*c2-b2*c1);
+        dd B =(a1*b2-a2*b1);
+        if(abs(B)<EPS)return out();
+        dd C = A/B;
+        if(abs(C)>inf)return out();
+        x = roundl(C);
+    }
+    {
+        dd A =(a2*c1-a1*c2);
+        dd B =(a1*b2-a2*b1);
+        if(abs(B)<EPS)return out();
+        dd C = A/B;
+        if(abs(C)>inf)return out();
+        y = roundl(C);
+    }
+    if(!in_check({x,y}))out();
+    
+    return {x,y};
+}
 
 signed main(){fastio
     clock_gettime(CLOCK_REALTIME, &START_TIME);
     ///////////////////////////////////////
+    /*
+    rep(i,1,10){
+        l_l p;cin>>p.fi>>p.se;
+        dd t;cin>>t;
+        line l = makeline(p,t);
+        cout<<l.a<<" "<<l.b<<" "<<l.c<<endl;
+    }exit(0);
+    */
+    //実験
+    ////////////////////////////////////////////////////////////
     
     {
         dd rho;cin>>rho;
         RHO = round(rho * 1000);
     }
     
-    rep(i,1,1000){
-        ll x = rand(-1e9,1e9);
-        ll y = rand(-1e9,1e9);
-        while(!in_check(x,y)){
-            x = rand(-1e9,1e9);
-            y = rand(-1e9,1e9);
+    
+    auto random=[](){
+        l_l p = {R,R};
+        while(!in_check(p)){
+            p.fi = rand(-R,R);
+            p.se = rand(-R,R);
         }
-        output(x,y);
+        return p;
+    };
+    
+    ll cnt = 0;
+    rep(i,1,2000){
+        //DEB(i);
+        l_l p1 = random();
+        l_l p2 = p1;
+        if(p1.se>=0){
+            p2.se -= 1e6;
+        }else{
+            p2.se += 1e6;
+        }
+        
+        dd theta1 = output(p1);
+        if(nil(theta1))continue;
+        
+        dd theta2 = output(p2);
+        if(nil(theta2))continue;
+        
+        line l1 = makeline(p1,theta1);
+        line l2 = makeline(p2,theta2);
+        
+        l_l kou = kouten(l1,l2);
+        if(in_check(kou)){
+            output(kou);
+            cnt++;
+        }
     }
     
     
