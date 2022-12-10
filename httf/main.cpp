@@ -154,13 +154,55 @@ dd stop_watch() {
 
 ////////////////////////////////////////////////
 
+ll RHO;
+ll R = (ll)1e9;
+dd NIL = -1;
+
+ll TURN = 0;
+bool in_check(ll x,ll y){
+    return x * x + y * y <= R * R;
+}
+dd output(ll x,ll y){
+    TURN++;
+    if(TURN == 1001)exit(0);
+    
+    assert(abs(x)<=R);
+    assert(abs(y)<=R);
+    cout<<x<<" "<<y<<endl;
+    fflush(stdout);
+    ll r;cin>>r;
+    if(r==0){
+        dd theta;cin>>theta;
+        return theta;
+    }else{
+        ll X,Y;cin>>X>>Y;
+        if(r==2){
+            exit(0);
+        }
+    }
+    return NIL;
+}
+
 
 
 signed main(){fastio
     clock_gettime(CLOCK_REALTIME, &START_TIME);
     ///////////////////////////////////////
     
+    {
+        dd rho;cin>>rho;
+        RHO = round(rho * 1000);
+    }
     
+    rep(i,1,1000){
+        ll x = rand(-1e9,1e9);
+        ll y = rand(-1e9,1e9);
+        while(!in_check(x,y)){
+            x = rand(-1e9,1e9);
+            y = rand(-1e9,1e9);
+        }
+        output(x,y);
+    }
     
     
     
