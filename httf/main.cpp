@@ -166,7 +166,7 @@ bool in_check(l_l P){
 dd output(l_l P){
     TURN++;
     if(TURN == 1001){
-        //cerr<<RHO<<endl;
+        DEB(RHO);
         DEB(SUCCESS_CNT);
         exit(0);
     }
@@ -189,6 +189,8 @@ dd output(l_l P){
         SUCCESS_CNT++;
         ll X,Y;cin>>X>>Y;
         if(r==2){
+            cerr<<"congratulation!"<<endl;
+            DEB(RHO);
             DEB(SUCCESS_CNT);
             exit(0);
         }
@@ -281,6 +283,10 @@ dd rad_dis(dd a,dd b){
     return ret;
 }
 
+ll dist(half a,half b){
+    return (ll)sqrt(powl(a.p.fi-b.p.fi,2) + powl(a.p.se-b.p.se,2));
+}
+
 signed main(){fastio
     clock_gettime(CLOCK_REALTIME, &START_TIME);
     ///////////////////////////////////////
@@ -328,25 +334,52 @@ signed main(){fastio
             H = {p1,theta};
         }
         
-        ll nxdis = 5e7;
+        half H2 = {{0,0},NIL};
+        
         
         rep(loop,1,20){
             //20回で見つからなければbreak
-            l_l nx = move(H,nxdis);
-            dd theta = output(nx);
-            if(nil(theta))break;
             
-            dd raddis = rad_dis(theta,H.theta);
             
-            if(abs(raddis)<=(dd)RHO*2e-3){
-                H = {nx,theta};
-            }else if(abs(raddis-PI)<=(dd)RHO*2e-3){
-                H = {nx,theta};
-                nxdis *= 0.5;
+            if(nil(H2.theta)){
+                ll nxdis = 5e7;
+                l_l nx = move(H,nxdis);
+                dd theta = output(nx);
+                if(nil(theta))break;
+                
+                dd raddis = rad_dis(theta,H.theta);
+                
+                if(abs(raddis)<=(dd)RHO*3e-2){
+                    H = {nx,theta};
+                }else if(abs(raddis-PI)<=(dd)RHO*3e-2){
+                    H2 = H;
+                    H = {nx,theta};
+                }else{
+                    H = {nx,theta};
+                    //もったいない
+                }
             }else{
-                H = {nx,theta};
-                //もったいない
+                ll dis = dist(H,H2);
+                ll nxdis = dis/2;
+                l_l nx = move(H,nxdis);
+                dd theta = output(nx);
+                if(nil(theta))break;
+                
+                dd raddis = rad_dis(theta,H.theta);
+                
+                
+                if(abs(raddis)<=(dd)RHO*3e-2){
+                    H = {nx,theta};
+                }else if(abs(raddis-PI)<=(dd)RHO*3e-2){
+                   // H2= {nx,theta};
+                    H2 = H;
+                    H = {nx,theta};
+                }else{
+                    //H = {nx,theta};
+                    //もったいない
+                }
             }
+            
         }
         
     }
