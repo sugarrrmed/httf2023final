@@ -1,0 +1,61 @@
+
+    Finished release [optimized] target(s) in 0.03s
+     Running `target/release/tester ./k.out 25`
+congratulation!
+RHO: 100
+SUCCESS_CNT: 50
+Score = 5755
+    Finished release [optimized] target(s) in 0.03s
+     Running `target/release/tester ./k.out 25`
+congratulation!
+RHO: 100
+SUCCESS_CNT: 50
+Score = 5450
+    Finished release [optimized] target(s) in 0.03s
+     Running `target/release/tester ./k.out 25`
+congratulation!
+RHO: 100
+SUCCESS_CNT: 50
+Score = 6085
+    Finished release [optimized] target(s) in 0.03s
+     Running `target/release/tester ./k.out 25`
+congratulation!
+RHO: 100
+SUCCESS_CNT: 50
+Score = 5655
+    Finished release [optimized] target(s) in 0.03s
+     Running `target/release/tester ./k.out 25`
+congratulation!
+RHO: 100
+SUCCESS_CNT: 50
+Score = 5715
+    Finished release [optimized] target(s) in 0.03s
+     Running `target/release/tester ./k.out 25`
+congratulation!
+RHO: 100
+SUCCESS_CNT: 50
+Score = 5680
+    Finished release [optimized] target(s) in 0.03s
+     Running `target/release/tester ./k.out 25`
+congratulation!
+RHO: 100
+SUCCESS_CNT: 50
+Score = 5850
+    Finished release [optimized] target(s) in 0.03s
+     Running `target/release/tester ./k.out 25`
+congratulation!
+RHO: 100
+SUCCESS_CNT: 50
+Score = 6015
+    Finished release [optimized] target(s) in 0.03s
+     Running `target/release/tester ./k.out 25`
+congratulation!
+RHO: 100
+SUCCESS_CNT: 50
+Score = 5695
+    Finished release [optimized] target(s) in 0.04s
+     Running `target/release/tester ./k.out 25`
+congratulation!
+RHO: 100
+SUCCESS_CNT: 50
+Score = 5645

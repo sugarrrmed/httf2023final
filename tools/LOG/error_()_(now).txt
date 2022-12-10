@@ -1,0 +1,6 @@
+
+    Finished release [optimized] target(s) in 0.03s
+     Running `target/release/tester ./k.out`
+RHO: 100
+SUCCESS_CNT: 0
+Score = 0

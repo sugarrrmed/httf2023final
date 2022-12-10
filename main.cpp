@@ -317,8 +317,7 @@ l_l randompoint(){
 };
 
 
-void SOLVE1(ll NXDIS){
-    cerr<<"NXDIS "<<NXDIS<<endl;
+void SOLVE1(){
     //2分探索っぽいやつ
     ll cnt = 0;
         rep(i,1,10000){
@@ -338,11 +337,10 @@ void SOLVE1(ll NXDIS){
             rep(loop,1,10000){
                 
                 if(nil(H2.theta)){
+                  //  ll nxdis = 5e7;
                     ll nxdis;
-                    nxdis = 1.5e8;
-                    //のこりの金塊でばあいわけ？
-                    
-                    
+                    if(RHO<=50)nxdis = 2e8;
+                    else nxdis = 1e8;//RHOとか残りの金塊の数とかで場合分けかなあ
                     l_l nx = move(H,nxdis);
                     dd theta = output(nx);
                     if(nil(theta))break;
@@ -397,6 +395,7 @@ void SOLVE1(ll NXDIS){
             }
             
         }
+        
     
 }
 void SOLVE2(){
@@ -505,7 +504,7 @@ void SOLVE2(){
 }
 
 
-signed main(int argc, char *argv[]){fastio
+signed main(){fastio
     clock_gettime(CLOCK_REALTIME, &START_TIME);
     ///////////////////////////////////////
     
@@ -514,12 +513,7 @@ signed main(int argc, char *argv[]){fastio
         RHO = round(rho * 1000);
     }
     
-    ll NXDIS = 0;
-    
-    if(argc==2)NXDIS =atoi( argv[1] );
-    
-    if(RHO<=2)SOLVE2();
-    else SOLVE1(NXDIS);
+    SOLVE1();
     
     
     
