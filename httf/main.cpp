@@ -163,7 +163,6 @@ bool in_check(l_l P){
     if(abs(P.fi)>R || abs(P.se)>R)return false;
     return P.fi*P.fi + P.se*P.se <= R * R;
 }
-l_l ANS;
 dd output(l_l P){
     TURN++;
     if(TURN == 1001){
@@ -188,8 +187,7 @@ dd output(l_l P){
         return theta;
     }else{
         SUCCESS_CNT++;
-        cin>>ANS.fi>>ANS.se;
-        
+        ll X,Y;cin>>X>>Y;
         if(r==2){
             cerr<<"congratulation!"<<endl;
             DEB(RHO);
@@ -203,6 +201,50 @@ bool nil(dd x){
     return abs(x-NIL)<=1;
 }
 
+struct line{
+    dd a,b,c;
+    dd theta;//ラジアン表記[0,2PI)
+};
+line makeline(l_l p,dd theta){
+    //みすってるかも
+    dd ta = tan(theta);
+    DEB(ta);
+    return {ta,-1,p.se-ta*p.fi,theta};
+}
+l_l kouten(line l1,line l2){
+    dd a1 = l1.a;
+    dd b1 = l1.b;
+    dd c1 = l1.c;
+    
+    dd a2 = l2.a;
+    dd b2 = l2.b;
+    dd c2 = l2.c;
+    
+    auto out=[](){
+        cerr<<"OUT"<<endl;
+        return (l_l){0,0};
+    };
+    ll x,y;
+    {
+        dd A =(b1*c2-b2*c1);
+        dd B =(a1*b2-a2*b1);
+        if(abs(B)<EPS)return out();
+        dd C = A/B;
+        if(abs(C)>inf)return out();
+        x = roundl(C);
+    }
+    {
+        dd A =(a2*c1-a1*c2);
+        dd B =(a1*b2-a2*b1);
+        if(abs(B)<EPS)return out();
+        dd C = A/B;
+        if(abs(C)>inf)return out();
+        y = roundl(C);
+    }
+    if(!in_check({x,y}))out();
+    
+    return {x,y};
+}
 
 struct half{
     l_l p;
@@ -239,6 +281,7 @@ dd rad_dis(dd a,dd b){
     while(b<0)b+=2*PI;
     while(b>2*PI)b-=2*PI;
     
+    
     if(a>b)swap(a,b);
     dd ret = b-a;
     chmin(ret,a+2*PI-b);
@@ -246,8 +289,9 @@ dd rad_dis(dd a,dd b){
     return ret;
 }
 
-dd dist(half a,half b){
-    return sqrt(powl(a.p.fi-b.p.fi,2) + powl(a.p.se-b.p.se,2));
+
+ll dist(half a,half b){
+    return (ll)sqrt(powl(a.p.fi-b.p.fi,2) + powl(a.p.se-b.p.se,2));
 }
 dd dist(l_l a,l_l b){
     return sqrt(powl(a.fi-b.fi,2) + powl(a.se-b.se,2));
@@ -267,6 +311,14 @@ dd muki(l_l a,l_l b){
 signed main(){fastio
     clock_gettime(CLOCK_REALTIME, &START_TIME);
     ///////////////////////////////////////
+    /*
+    rep(i,1,10){
+        l_l p;cin>>p.fi>>p.se;
+        dd t;cin>>t;
+        line l = makeline(p,t);
+        cout<<l.a<<" "<<l.b<<" "<<l.c<<endl;
+    }exit(0);
+    //*/
     /*
     rep(i,1,10){
         dd a, b;cin>>a>>b;
@@ -291,80 +343,126 @@ signed main(){fastio
         return p;
     };
     
-    vector<half>data;
-    auto erase=[&](){
-        vector<half>nx;
-        for(half x:data){
-            dd the1 = muki(x.p,ANS);
-            if(rad_dis(the1,x.theta)<=RHO*2e-3){
-                
-            }else{
-                nx.pb(x);
-            }
+    ll cnt = 0;
+    rep(i,1,10000){
+        
+        l_l p1 = random();
+        
+        half H;
+        {
+            dd theta = output(p1);
+            if(nil(theta))continue;
+            H = {p1,theta};
         }
         
-        data = nx;
-    };
-    
-    rep(i,1,300){
-        l_l pos = random();
-        dd theta = output(pos);
-        if(nil(theta)){
-            erase();
-            continue;
-        }
-        data.pb({pos,theta});
-    }
-    struct D{
-        vl_l poss;
-        vl tai;
-        dd score;
-    };
-    ll sz = data.size();
-    D now;
-    rep(i,1,50-SUCCESS_CNT){
-        now.poss.pb(random());
-    }
-    now.tai.resize(sz);
-    rep(i,0,sz-1){
-        ll pos=-1;
-        dd mindis = inf;
-        rep(j,0,now.poss.size()-1){
-            dd dis = dist(now.poss[j],data[i].p);
-            if(mindis>dis){
-                pos = j;
-                mindis = dis;
+        half H2 = {{0,0},NIL};
+        
+        rep(loop,1,20){
+            //20回で見つからなければbreak
+            
+            
+            if(nil(H2.theta)){
+              //  ll nxdis = 5e7;
+                ll nxdis;
+                if(RHO<=50)nxdis = 2e8;
+                else nxdis = 1e8;//RHOとか残りの金塊の数とかで場合分けかなあ
+                l_l nx = move(H,nxdis);
+                dd theta = output(nx);
+                if(nil(theta))break;
+                
+                dd raddis = rad_dis(theta,H.theta);
+                
+                if(abs(raddis)<=(dd)RHO*3e-2){
+                    H = {nx,theta};
+                }else if(abs(raddis-PI)<=(dd)RHO*3e-2){
+                    H2 = H;
+                    H = {nx,theta};
+                }else{
+                    H = {nx,theta};
+                    //もったいない
+                }
+            }else{
+                
+                bool seikou=false;
+                rep(tameshi,1,2){
+                    ll dis = dist(H,H2);
+                    ll nxdis = dis/2;
+                    l_l pos;
+                    if(tameshi==1)pos = move({H.p,H.theta+PI/18},nxdis);
+                    else pos = move({H.p,H.theta-PI/18},nxdis);
+                    dd theta = output(pos);
+                    if(nil(theta)){
+                        seikou=true;
+                        break;
+                    }
+                    auto search=[&](){
+                        auto C=[&](l_l nx){
+                            dd P=rad_dis(theta,muki(nx,pos));
+                            while(P>PI)P-=PI;
+                            while(P<0)P+=PI;
+                            return min(P,PI-P);
+                        };
+                        ll L = 0;
+                        ll R = dist(H,H2);
+                        
+                        rep(i,1,30){
+                            ll M1 = (2*L+R)/3;
+                            ll M2 = (L+2*R)/3;
+                            l_l nx1 = move(H,M1);
+                            l_l nx2 = move(H,M2);
+                            
+                            if(C(nx1)>C(nx2)){
+                                L=M1;
+                            }else{
+                                R=M2;
+                            }
+                        }
+                        ll M=(L+R)/2;
+                       /* if(M<=100 || dist(H,H2)-M<=100){
+                            return false;
+                        }*/
+                        l_l nx = move(H,M);
+                        if(in_check(nx)){
+                            dd ret = output(nx);
+                            return nil(ret);
+                        }else{
+                            return false;
+                        }
+                    };
+                    if(search()){
+                        seikou=true;
+                        break;
+                    }
+                }
+                if(seikou)break;
+                
+                
+                
+               /* ll dis = dist(H,H2);
+                ll nxdis = dis/2;
+                l_l nx = move(H,nxdis);
+                dd theta = output(nx);
+                if(nil(theta))break;
+                
+                dd raddis = rad_dis(theta,H.theta);
+                
+                
+                if(abs(raddis)<=(dd)RHO*3e-2){
+                    H = {nx,theta};
+                }else if(abs(raddis-PI)<=(dd)RHO*3e-2){
+                   // H2= {nx,theta};
+                    H2 = H;
+                    H = {nx,theta};
+                }else{
+                    //H = {nx,theta};
+                    //もったいない
+                }*/
             }
+            
         }
-        assert(pos!=-1);
-        now.tai[i] = pos;
+        
     }
-    auto calc_score=[&](D d){
-        dd score = 0;
-        rep(i,0,(int)d.tai.size()-1){
-            score += 1/(rad_dis(data[i].theta,muki(data[i].p,d.poss[d.tai[i]]))) * powl(dist(d.poss[d.tai[i]],data[i].p),2);
-        }
-        return score;
-    };
-    now.score = calc_score(now);
-    rep(loop,1,1000000){
-        D nx = now;
-        if(loop%2==0){
-            ll pos = rand(0,now.poss.size()-1);
-            nx.poss[pos] = move({nx.poss[pos],randdouble(0,2*PI)},1e6);
-        }else{
-            ll pos = rand(0,now.tai.size()-1);
-            nx.tai[pos] = rand(0,(int)nx.poss.size()-1);
-        }
-        nx.score = calc_score(nx);
-        if(now.score<nx.score){
-            now = nx;
-            cerr<<loop<<" "<<nx.score<<endl;
-        }
-    }
-    for(l_l p:now.poss){
-        output(p);
-    }
+    
     
     
     {
