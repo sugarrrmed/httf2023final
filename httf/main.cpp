@@ -163,6 +163,70 @@ bool in_check(l_l P){
     if(abs(P.fi)>R || abs(P.se)>R)return false;
     return P.fi*P.fi + P.se*P.se <= R * R;
 }
+l_l ANS;
+
+struct half{
+    l_l p;
+    dd theta;//ラジアン表記
+};
+vector<half>kako;
+
+
+dd rad_dis(dd a,dd b){
+    while(a<0)a+=2*PI;
+    while(a>2*PI)a-=2*PI;
+    while(b<0)b+=2*PI;
+    while(b>2*PI)b-=2*PI;
+    
+    
+    if(a>b)swap(a,b);
+    dd ret = b-a;
+    chmin(ret,a+2*PI-b);
+    assert(-EPS<=ret && ret<=PI+ret);
+    //[0,PI]
+    return ret;
+}
+dd rad_dis_muki(dd a,dd b){
+    //aを時計回りに回転させてbにさせる
+    dd c = b-a;
+    while(c>PI)c-=2*PI;
+    while(c<-PI)c+=2*PI;
+    assert(-PI-EPS<=c && c<=PI+EPS);
+    //[-PI,PI]
+    return c;
+}
+
+dd muki(l_l a,l_l b){
+    //aから見た時のbの向き
+    dd dx = b.fi-a.fi;
+    dd dy = b.se-a.se;
+    if(abs(dx)<=EPS && abs(dy)<=EPS){
+        cerr<<"error"<<endl;
+    }
+    //[-PI,PI]
+    return atan2(dy,dx);
+}
+
+void erase(){
+    vector<half>nx;
+    for(half x:kako){
+        dd anstheta = muki(x.p,ANS);
+        dd raddis = rad_dis(anstheta,x.theta);
+        //ちょっと変なことしてる
+        assert(-EPS<=raddis && raddis<=PI+EPS);
+        if(min(raddis,PI-raddis) <= RHO * 3e-3){
+            
+        }else{
+            nx.pb(x);
+        }
+    }
+   // cerr<<"kako nx size "<<kako.size()<<" "<<nx.size()<<endl;
+    kako=nx;
+}
+
+
+vl_l hozon;
+
 dd output(l_l P){
     TURN++;
     if(TURN == 1001){
@@ -184,16 +248,19 @@ dd output(l_l P){
     ll r;cin>>r;
     if(r==0){
         dd theta;cin>>theta;
+        kako.pb({P,theta});
         return theta;
     }else{
         SUCCESS_CNT++;
-        ll X,Y;cin>>X>>Y;
+        cin>>ANS.fi>>ANS.se;
         if(r==2){
             cerr<<"congratulation!"<<endl;
             DEB(RHO);
             DEB(SUCCESS_CNT);
             exit(0);
         }
+        erase();
+        hozon.clear();
     }
     return NIL;
 }
@@ -201,55 +268,8 @@ bool nil(dd x){
     return abs(x-NIL)<=1;
 }
 
-struct line{
-    dd a,b,c;
-    dd theta;//ラジアン表記[0,2PI)
-};
-line makeline(l_l p,dd theta){
-    //みすってるかも
-    dd ta = tan(theta);
-    DEB(ta);
-    return {ta,-1,p.se-ta*p.fi,theta};
-}
-l_l kouten(line l1,line l2){
-    dd a1 = l1.a;
-    dd b1 = l1.b;
-    dd c1 = l1.c;
-    
-    dd a2 = l2.a;
-    dd b2 = l2.b;
-    dd c2 = l2.c;
-    
-    auto out=[](){
-        cerr<<"OUT"<<endl;
-        return (l_l){0,0};
-    };
-    ll x,y;
-    {
-        dd A =(b1*c2-b2*c1);
-        dd B =(a1*b2-a2*b1);
-        if(abs(B)<EPS)return out();
-        dd C = A/B;
-        if(abs(C)>inf)return out();
-        x = roundl(C);
-    }
-    {
-        dd A =(a2*c1-a1*c2);
-        dd B =(a1*b2-a2*b1);
-        if(abs(B)<EPS)return out();
-        dd C = A/B;
-        if(abs(C)>inf)return out();
-        y = roundl(C);
-    }
-    if(!in_check({x,y}))out();
-    
-    return {x,y};
-}
 
-struct half{
-    l_l p;
-    dd theta;//ラジアン表記
-};
+
 l_l add(l_l a,l_l b){
     return {a.fi+b.fi,a.se+b.se};
 }
@@ -275,19 +295,6 @@ l_l move(half p,ll dis){
     return nx;
 }
 
-dd rad_dis(dd a,dd b){
-    while(a<0)a+=2*PI;
-    while(a>2*PI)a-=2*PI;
-    while(b<0)b+=2*PI;
-    while(b>2*PI)b-=2*PI;
-    
-    
-    if(a>b)swap(a,b);
-    dd ret = b-a;
-    chmin(ret,a+2*PI-b);
-    assert(-EPS<=ret && ret<=PI+ret);
-    return ret;
-}
 
 
 ll dist(half a,half b){
@@ -297,56 +304,156 @@ dd dist(l_l a,l_l b){
     return sqrt(powl(a.fi-b.fi,2) + powl(a.se-b.se,2));
 }
 
-dd muki(l_l a,l_l b){
-    //aから見た時のbの向き
-    dd dx = b.fi-a.fi;
-    dd dy = b.se-a.se;
-    if(abs(dx)<=EPS && abs(dy)<=EPS){
-        cerr<<"error"<<endl;
-    }
-    return atan2(dy,dx);
-}
 
 
-signed main(){fastio
-    clock_gettime(CLOCK_REALTIME, &START_TIME);
-    ///////////////////////////////////////
-    /*
-    rep(i,1,10){
-        l_l p;cin>>p.fi>>p.se;
-        dd t;cin>>t;
-        line l = makeline(p,t);
-        cout<<l.a<<" "<<l.b<<" "<<l.c<<endl;
-    }exit(0);
-    //*/
-    /*
-    rep(i,1,10){
-        dd a, b;cin>>a>>b;
-        cout<<rad_dis(a,b)<<endl;
+l_l randompoint(){
+    l_l p = {R,R};
+    while(!in_check(p)){
+        p.fi = rand(-R,R);
+        p.se = rand(-R,R);
     }
-     //*/
-    //実験
-    ////////////////////////////////////////////////////////////
+    return p;
+};
+
+
+void SOLVE1(){
+    //2分探索っぽいやつ
+    ll cnt = 0;
     
-    {
-        dd rho;cin>>rho;
-        RHO = round(rho * 1000);
-    }
-    
-    
-    auto random=[](){
-        l_l p = {R,R};
-        while(!in_check(p)){
-            p.fi = rand(-R,R);
-            p.se = rand(-R,R);
+    half H,H2;
+    rep(i,1,10000){
+        
+        H = {{0,0},NIL};
+        H2 = {{0,0},NIL};
+        
+        
+        {
+            struct Q{
+                half h,h2;
+                dd dis;
+            };
+            vector<Q>V;
+            rep(z1,0,(int)kako.size()-1){
+                rep(z2,z1+1,(int)kako.size()-1){
+                    half a = kako[z1];
+                    half b = kako[z2];
+                    if(dist(a,b)<=3e6)continue;
+                    dd atob = muki(a.p,b.p);
+                    dd rad = rad_dis_muki(atob,a.theta);
+                    if(abs(rad)<=RHO*2e-3){
+                        if(abs(rad_dis_muki(a.theta,b.theta)) >=PI - RHO*2e-3){
+                            V.pb({a,b,(dd)dist(a,b)});
+                        }
+                    }
+                }
+            }
+            sort(all(V),[](Q a,Q b){return a.dis<b.dis;});
+            while((int)V.size()>10)V.pop_back();
+            if((int)V.size()>=5){
+                ll k = rand(0,(int)V.size()-1);
+                H = V[k].h;
+                H2 =V[k].h2;
+            }
         }
-        return p;
-    };
+        
+        
+        
+        if(nil(H.theta)){
+            if((int)kako.size()>=1){
+                H = kako[rand(0,(int)kako.size()-1)];
+            }
+        }
+        
+        if(nil(H.theta)){
+            l_l p1 = randompoint();
+            dd theta = output(p1);
+            if(nil(theta))continue;
+            H = {p1,theta};
+            H2 = {{0,0},NIL};
+        }
+        
+        
+        
+        rep(loop,1,30){
+            if(!nil(H.theta)){
+                cout<<"#c "<<H.p.fi<<" "<<H.p.se<<"  250 0 0 "<<endl;
+            }
+            for(l_l x:hozon){
+                cout<<"# "<<x.fi<<" "<<x.se<<endl;
+            }
+            if(nil(H2.theta)){
+                ll nxdis;
+                if(RHO<=50)nxdis = 2e8;
+                else nxdis = 1e8;//RHOとか残りの金塊の数とかで場合分けかなあ
+                l_l nx = move(H,nxdis);
+                dd theta = output(nx);
+              //  cout<<"# "<<H.p.fi<<" "<<H.p.se<<","<<nx.fi<<" "<<nx.se<<endl;
+                if(nil(theta))break;
+                
+                dd raddis = rad_dis(theta,H.theta);
+                
+                if(abs(raddis)<=(dd)RHO*3e-2){
+                    H = {nx,theta};
+                }else if(abs(raddis-PI)<=(dd)RHO*3e-2){
+                    H2 = H;
+                    H = {nx,theta};
+                }else{
+                    H = {nx,theta};
+                }
+                hozon.pb({1,-1});
+            }else{
+                ll dis = dist(H,H2);
+                if(dis<=2e6)break;
+                ll nxdis = dis/2;
+                l_l nx = move(H,nxdis);
+                
+                {
+                    bool ng=false;
+                    for(half x:kako){
+                        if(dist(x.p,nx)<=1e6)ng=true;
+                    }
+                    if(ng)break;
+                }
+                
+                dd theta = output(nx);
+                if(nil(theta))break;
+                
+                dd raddis = rad_dis(theta,H.theta);
+                
+                if(abs(raddis)<=(dd)RHO*3e-2){
+                    H = {nx,theta};
+                    hozon.pb({2,1});
+                }else if(abs(raddis-PI)<=(dd)RHO*3e-2){
+                    H2 = H;
+                    H = {nx,theta};
+                    hozon.pb({2,2});
+                }else{
+                    if(hozon.size()>=3){
+                        bool bre = true;
+                        rep(i,(int)hozon.size()-3,(int)hozon.size()-1){
+                            if(hozon[i] != (l_l){2,3}){
+                                bre=false;
+                            }
+                        }
+                        if(bre)break;
+                    }
+                    hozon.pb({2,3});
+                }
+            }
+            
+        }
+        
+    }
+    
+    
+}
+void SOLVE2(){
+    //3点から推測するやつ
     
     ll cnt = 0;
     rep(i,1,10000){
         
-        l_l p1 = random();
+        l_l p1 = randompoint();
         
         half H;
         {
@@ -436,32 +543,26 @@ signed main(){fastio
                 }
                 if(seikou)break;
                 
-                
-                
-               /* ll dis = dist(H,H2);
-                ll nxdis = dis/2;
-                l_l nx = move(H,nxdis);
-                dd theta = output(nx);
-                if(nil(theta))break;
-                
-                dd raddis = rad_dis(theta,H.theta);
-                
-                
-                if(abs(raddis)<=(dd)RHO*3e-2){
-                    H = {nx,theta};
-                }else if(abs(raddis-PI)<=(dd)RHO*3e-2){
-                   // H2= {nx,theta};
-                    H2 = H;
-                    H = {nx,theta};
-                }else{
-                    //H = {nx,theta};
-                    //もったいない
-                }*/
             }
             
         }
         
     }
+    
+    
+}
+
+
+signed main(){fastio
+    clock_gettime(CLOCK_REALTIME, &START_TIME);
+    ///////////////////////////////////////
+    
+    {
+        dd rho;cin>>rho;
+        RHO = round(rho * 1000);
+    }
+    
+    SOLVE1();
     
     
     
